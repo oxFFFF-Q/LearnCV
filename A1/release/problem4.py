@@ -14,7 +14,19 @@ def gauss2d(sigma, fsize):
   """
 
   #
-  # You code here
+  kernel = np.zeros((fsize, fsize))
+  center = fsize // 2
+  if sigma <= 0:
+    sigma = ((fsize - 1) * 0.5 - 1) * 0.3 + 0.8
+  s = sigma ** 2
+  sum_val = 0
+  for i in range(fsize):
+    for j in range(fsize):
+      x, y = i - center, j - center
+      kernel[i, j] = np.exp(-(x ** 2 + y ** 2) / 2 * s)
+      sum_val += kernel[i, j]
+  g = kernel / sum_val
+  return g
   #
 
 
@@ -25,8 +37,11 @@ def createfilters():
   """
 
   #
-  # You code here
+  fx = np.array((0.5, 0, -0.5))
+  fy = gauss2d(0.9, 3)[:, 0]
+  return  fx, fy
   #
+
 
 
 def filterimage(I, fx, fy):
@@ -42,7 +57,9 @@ def filterimage(I, fx, fy):
   """
 
   #
-  # You code here
+  Ix = ndimage.convolve(fx, I)
+  Iy = ndimage.convolve(fy, I)
+  return Ix, Iy
   #
 
 
