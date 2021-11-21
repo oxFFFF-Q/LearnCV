@@ -37,7 +37,7 @@ def createfilters():
   """
 
   #
-  fx = np.array((0.5, 0, -0.5))
+  fx = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]]) / 6
   fy = gauss2d(0.9, 3)[:, 0]
   return  fx, fy
   #
@@ -75,7 +75,11 @@ def detectedges(Ix, Iy, thr):
   """
 
   #
-  # You code here
+  edges = np.sqrt(np.square(Ix) + np.square(Iy))
+  if edges > thr:
+    return (Ix, Iy)
+  else:
+    return (0, 0)
   #
 
 
