@@ -14,18 +14,11 @@ def gauss2d(sigma, fsize):
   """
 
   #
-  kernel = np.zeros((fsize, fsize))
-  center = fsize // 2
-  if sigma <= 0:
-    sigma = ((fsize - 1) * 0.5 - 1) * 0.3 + 0.8
-  s = sigma ** 2
-  sum_val = 0
-  for i in range(fsize):
-    for j in range(fsize):
-      x, y = i - center, j - center
-      kernel[i, j] = np.exp(-(x ** 2 + y ** 2) / 2 * s)
-      sum_val += kernel[i, j]
-  g = kernel / sum_val
+  offset = fsize // 2
+  g = np.zeros((3, 1), dtype=np.float)
+  for i in range(-offset, -offset + fsize):
+    g[i + offset] = np.exp(-(i ** 2) / (2 * sigma ** 2))
+  g = g / g.sum()
   return g
   #
 
@@ -37,9 +30,11 @@ def createfilters():
   """
 
   #
-  fx = np.array([[1, 0, -1], [1, 0, -1], [1, 0, -1]]) / 6
-  fy = gauss2d(0.9, 3)[:, 0]
-  return  fx, fy
+  g = gauss2d(0.9, 3)
+  derxy = (1 / 2) * np.array([1, 0, -1])
+  fx = g * derxy
+  fy = np.outer((derxy.T), (g.T))
+  return fx, fy
   #
 
 
@@ -57,8 +52,8 @@ def filterimage(I, fx, fy):
   """
 
   #
-  Ix = ndimage.convolve(fx, I)
-  Iy = ndimage.convolve(fy, I)
+  Ix = ndimage.convolve(I, fx, mode='constant', cval=0.0)
+  Iy = ndimage.convolve(I, fy, mode='constant', cval=0.0)
   return Ix, Iy
   #
 
@@ -75,11 +70,11 @@ def detectedges(Ix, Iy, thr):
   """
 
   #
-  edges = np.sqrt(np.square(Ix) + np.square(Iy))
-  if edges > thr:
-    return (Ix, Iy)
-  else:
-    return (0, 0)
+  edges = np.zeros(Ix.shape)
+  sos = np.sqrt(Ix ** 2 + Iy ** 2)
+  mask = (sos >= (thr * 0.1))
+  edges[mask] = sos[mask]
+  return edges
   #
 
 
@@ -93,19 +88,29 @@ def nonmaxsupp(edges, Ix, Iy):
   Returns:
     edges2: edge map where non-maximum edges are suppressed
   """
-
+  edges2 = np.zeros(Ix.shape)
+  edpad = np.pad(edges, pad_width=1, mode='constant', constant_values=0)
+  for i in range(1, 1 + edges.shape[0]):
+    for j in range(1, 1 + edges.shape[1]):
+      if  edges[i-1][j-1]==0:
+        continue
+      if Ix[i - 1][j - 1] == 0:
+        Ix[i - 1][j - 1] += 0.00001
+      theta = (np.arctan(Iy[i - 1][j - 1] / Ix[i - 1][j - 1]) / np.pi) * 180
   # handle top-to-bottom edges: theta in [-90, -67.5] or (67.5, 90]
-
-  # You code here
-
+      if (-90 <= theta <= -67.5) or (67.5 < theta <= 90):
+        if edpad[i][j] > edpad[i - 1][j] and edpad[i][j] > edpad[i + 1][j]:
+          edges2[i - 1][j - 1] = edpad[i][j]
   # handle left-to-right edges: theta in (-22.5, 22.5]
-
-  # You code here
-
+      elif -22.5 < theta <= 22.5:
+        if edpad[i][j] > edpad[i][j - 1] and edpad[i][j] > edpad[i][j + 1]:
+          edges2[i - 1][j - 1] = edpad[i][j]
   # handle bottomleft-to-topright edges: theta in (22.5, 67.5]
-
-  # Your code here
-
+      elif (22.5 < theta <= 67.5):
+        if edpad[i][j] > edpad[i + 1][j - 1] and edpad[i][j] > edpad[i - 1][j + 1]:
+          edges2[i - 1][j - 1] = edpad[i][j]
   # handle topleft-to-bottomright edges: theta in [-67.5, -22.5]
-
-  # Your code here
+      elif (-67.5 <= theta <= -22.5):
+        if edpad[i][j] > edpad[i - 1][j - 1] and edpad[i][j] > edpad[i + 1][j + 1]:
+          edges2[i - 1][j - 1] = edpad[i][j]
+  return edges2
