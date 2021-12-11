@@ -6,8 +6,9 @@ from scipy.ndimage import filters
 def compute_harris_response(im,sigma=3):
     """ Compute the Harris corner detector response function 
         for each pixel in a graylevel image. """
+    # 在灰度图中，对每个像素计算Harris角点检测器响应函数
     
-    # derivatives
+    # derivatives 计算导数
     imx = zeros(im.shape)
     filters.gaussian_filter(im, (sigma,sigma), (0,1), imx)
     imy = zeros(im.shape)
@@ -18,7 +19,7 @@ def compute_harris_response(im,sigma=3):
     Wxy = filters.gaussian_filter(imx*imy,sigma)
     Wyy = filters.gaussian_filter(imy*imy,sigma)
     
-    # determinant and trace
+    # determinant and trace 计算特征值和轨迹
     Wdet = Wxx*Wyy - Wxy**2
     Wtr = Wxx + Wyy
     
@@ -29,25 +30,32 @@ def get_harris_points(harrisim,min_dist=10,threshold=0.1):
     """ Return corners from a Harris response image
         min_dist is the minimum number of pixels separating 
         corners and image boundary. """
+    """ 从 Harris 响应图像返回角点。 min_dist 是分隔角点和图像边界的最小像素数。 """
     
     # find top corner candidates above a threshold
+    # 找到高于闸值的候选角点
     corner_threshold = harrisim.max() * threshold
     harrisim_t = (harrisim > corner_threshold) * 1
     
     # get coordinates of candidates
+    # 得到候选角点坐标
     coords = array(harrisim_t.nonzero()).T
     
     # ...and their values
+    # 以及它们的Harris响应值
     candidate_values = [harrisim[c[0],c[1]] for c in coords]
     
     # sort candidates
+    # 对候选点按照响应值进行排序
     index = argsort(candidate_values)
     
     # store allowed point locations in array
+    # 将可行点的位置保存在数组中
     allowed_locations = zeros(harrisim.shape)
     allowed_locations[min_dist:-min_dist,min_dist:-min_dist] = 1
     
     # select the best points taking min_distance into account
+    # 按照min_distance原则，选取最佳的Harris点
     filtered_coords = []
     for i in index:
         if allowed_locations[coords[i,0],coords[i,1]] == 1:
@@ -60,6 +68,7 @@ def get_harris_points(harrisim,min_dist=10,threshold=0.1):
     
 def plot_harris_points(image,filtered_coords):
     """ Plots corners found in image. """
+    """ 绘制检测到的角点 """
     
     figure()
     gray()
@@ -68,6 +77,12 @@ def plot_harris_points(image,filtered_coords):
                 [p[0] for p in filtered_coords],'*')
     axis('off')
     show()
+    '''
+    im = array(Image.open('xxx.jpg').convert('L'))
+    harrisim = harris.compute_harris_response(im)
+    filtered_coords = harris.get_harris_points(harrisim,6)
+    harris.plot_harris_points(im,filtered_coords)
+    '''
     
 
 def get_descriptors(image,filtered_coords,wid=5):
