@@ -89,6 +89,9 @@ def get_descriptors(image,filtered_coords,wid=5):
     """ For each point return pixel values around the point
         using a neighbourhood of width 2*wid+1. (Assume points are 
         extracted with min_distance > wid). """
+    '''
+    对于每个返回的点，返回点周围2*wid+1个像素的值（假设选取点的min_distance > wid）
+    '''
     
     desc = []
     for coords in filtered_coords:
@@ -103,10 +106,13 @@ def match(desc1,desc2,threshold=0.5):
     """ For each corner point descriptor in the first image, 
         select its match to second image using
         normalized cross correlation. """
-    
+    '''
+    对于第一幅图像中的每个角点描述子，使用归一化互相关，选取它在第二幅图像中的匹配角点
+    '''
     n = len(desc1[0])
     
     # pair-wise distances
+    # 点对的距离
     d = -ones((len(desc1),len(desc2)))
     for i in range(len(desc1)):
         for j in range(len(desc2)):
@@ -124,6 +130,7 @@ def match(desc1,desc2,threshold=0.5):
 
 def match_twosided(desc1,desc2,threshold=0.5):
     """ Two-sided symmetric version of match(). """
+    ''' 两边对称版本的match '''
     
     matches_12 = match(desc1,desc2,threshold)
     matches_21 = match(desc2,desc1,threshold)
@@ -131,6 +138,7 @@ def match_twosided(desc1,desc2,threshold=0.5):
     ndx_12 = where(matches_12 >= 0)[0]
     
     # remove matches that are not symmetric
+    # 去除非对称的匹配
     for n in ndx_12:
         if matches_21[matches_12[n]] != n:
             matches_12[n] = -1
@@ -140,8 +148,10 @@ def match_twosided(desc1,desc2,threshold=0.5):
 
 def appendimages(im1,im2):
     """ Return a new image that appends the two images side-by-side. """
+    ''' 返回两幅图像拼接成的新图像'''
     
     # select the image with the fewest rows and fill in enough empty rows
+    # 选取具有最少行数的图像，然后填充足够的空行
     rows1 = im1.shape[0]    
     rows2 = im2.shape[0]
     
@@ -150,6 +160,7 @@ def appendimages(im1,im2):
     elif rows1 > rows2:
         im2 = concatenate((im2,zeros((rows1-rows2,im2.shape[1]))),axis=0)
     # if none of these cases they are equal, no filling needed.
+    # 如果这些情况都没有，那么它们的行数相同，不需要填充
     
     return concatenate((im1,im2), axis=1)
     
@@ -159,6 +170,10 @@ def plot_matches(im1,im2,locs1,locs2,matchscores,show_below=True):
         input: im1,im2 (images as arrays), locs1,locs2 (feature locations), 
         matchscores (as output from 'match()'), 
         show_below (if images should be shown below matches). """
+    """ 显示带有连接匹配之间连线的图片
+         输入：im1，im2（数组图像），locs1，locs2（特征位置），
+             matchscores（“match()”的输出），
+             show_below（如果图像应显示在匹配的下方）。 """
     
     im3 = appendimages(im1,im2)
     if show_below:
@@ -171,3 +186,23 @@ def plot_matches(im1,im2,locs1,locs2,matchscores,show_below=True):
         if m>0:
             plot([locs1[i][1],locs2[m][1]+cols1],[locs1[i][0],locs2[m][0]],'c')
     axis('off')
+
+'''
+# 使用归一化互相关矩阵
+wid = 5
+harrisim = harris.compute_harris_reponse(im1,5)
+filtered_coords1 = harris.get_harris_points(harrisim,wid+1)
+d1 = harris.get_descriptors(im1,filtered_coords1,wid)
+
+harrisim = harris.compute_harris_reponse(im2,5)
+filtered_coords2 = harris.getharris_points(harrisim,wid+1)
+d2 = harris.get_descriptors(im2,filtered_coords2,wid)
+
+print('starting matching')
+matches = harris.match_twosided(d1,d2)
+
+figure()
+gray()
+harris.plot_matches(im1,im2,filtered_coords1,filtered_coords2,matches)     # 画出匹配子集 matches[:100]
+show()
+'''
