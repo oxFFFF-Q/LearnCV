@@ -100,6 +100,8 @@ def panorama(H,fromim,toim,padding=2400,delta=2400):
         using a homography H (preferably estimated using RANSAC).
         The result is an image with the same height as toim. 'padding' 
         specifies number of fill pixels and 'delta' additional translation. """ 
+    ''' 使用单应性矩阵H（使用RANSAC得到），协调两幅图像，创建水平全景图像，结果为
+        一幅和toim具有相同高度的图像。padding指定填充像素的数目，delta指定额外的平移量'''
     
     # check if images are grayscale or color
     is_color = len(fromim.shape) == 3
@@ -154,4 +156,21 @@ def panorama(H,fromim,toim,padding=2400,delta=2400):
         toim_t = fromim_t*alpha + toim_t*(1-alpha)
     
     return toim_t
+'''
+# 扭曲图像
+delta = 2000
+
+im1 = array(Image.open(imname[1]))
+im2 = array(Image.open(imname[2]))
+im_12 = warp.panorama(H_12,im1,im2,delta,delta)
+
+im1 = array(Image.open(imname[0]))
+im_02 = warp.panorama(dot(H_12,H_01),im1,im_12,delta,delta)
+
+im1 = array(Image.open(imname[3]))
+im_32 = warp.panorama(H32,im1,im_02,delta,delta)
+
+im1 = array(Image.open(imname[j+1]))
+im_42 = warp.panorama(dot(H_32,H_43),im1,im_32,delta,2*delta)
+'''
 
