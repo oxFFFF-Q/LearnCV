@@ -5,12 +5,14 @@ from scipy import ndimage
 class RansacModel(object):
     """ Class for testing homography fit with ransac.py from
         http://www.scipy.org/Cookbook/RANSAC"""
+    ''' 用于测试单应性矩阵的类'''
     
     def __init__(self,debug=False):
         self.debug = debug
         
     def fit(self, data):
         """ Fit homography to four selected correspondences. """
+        ''' 计算选取的四个单应性矩阵'''
         
         # transpose to fit H_from_points()
         data = data.T
@@ -26,6 +28,7 @@ class RansacModel(object):
     def get_error( self, data, H):
         """ Apply homography to all correspondences, 
             return error for each transformed point. """
+        ''' 对所有的对应计算单应性矩阵，然后对每个变换后的点，返回相应的误差'''
         
         data = data.T
         
@@ -50,6 +53,8 @@ def H_from_ransac(fp,tp,model,maxiter=1000,match_theshold=10):
         http://www.scipy.org/Cookbook/RANSAC).
         
         input: fp,tp (3*n arrays) points in hom. coordinates. """
+    ''' 使用一个阈值来决定那些单应性矩阵是合理的，使用RANSAC稳健性估计点对应的单应性矩阵
+    #      输入： 齐次坐标系表示的点fp,tp(3×n 数组) '''
     
     import ransac
     
