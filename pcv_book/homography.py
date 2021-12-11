@@ -65,12 +65,15 @@ def H_from_points(fp,tp):
     """ Find homography H, such that fp is mapped to tp
         using the linear DLT method. Points are conditioned
         automatically. """
+    ''' 使用线性DLT方法，计算单应性矩阵H，使fp映射到tp。点自动进行归一化 '''
     
     if fp.shape != tp.shape:
         raise RuntimeError('number of points do not match')
         
     # condition points (important for numerical reasons)
     # --from points--
+    # 对点进行归一化
+    # 映射起始点
     m = mean(fp[:2], axis=1)
     maxstd = max(std(fp[:2], axis=1)) + 1e-9
     C1 = diag([1/maxstd, 1/maxstd, 1]) 
@@ -79,6 +82,7 @@ def H_from_points(fp,tp):
     fp = dot(C1,fp)
     
     # --to points--
+    # 映射对应点
     m = mean(tp[:2], axis=1)
     maxstd = max(std(tp[:2], axis=1)) + 1e-9
     C2 = diag([1/maxstd, 1/maxstd, 1])
@@ -87,6 +91,7 @@ def H_from_points(fp,tp):
     tp = dot(C2,tp)
     
     # create matrix for linear method, 2 rows for each correspondence pair
+    # 创建用于线性方法的矩阵，对于每个对应对，在矩阵中会出现两行数值
     nbr_correspondences = fp.shape[1]
     A = zeros((2*nbr_correspondences,9))
     for i in range(nbr_correspondences):        
@@ -99,6 +104,7 @@ def H_from_points(fp,tp):
     H = V[8].reshape((3,3))    
     
     # decondition
+    # 反归一化
     H = dot(linalg.inv(C2),dot(H,C1))
     
     # normalize and return
@@ -149,6 +155,7 @@ def Haffine_from_points(fp,tp):
 def normalize(points):
     """ Normalize a collection of points in 
         homogeneous coordinates so that last row = 1. """
+    """ 在齐次坐标的意义下，对点集进行归一化，使最后一行 为 1。"""
 
     for row in points:
         row /= points[-1]
@@ -158,6 +165,7 @@ def normalize(points):
 def make_homog(points):
     """ Convert a set of points (dim*n array) to 
         homogeneous coordinates. """
+    """ 将点集（dim*n的数组）转换为齐次坐标表示。 """
         
     return vstack((points,ones((1,points.shape[1])))) 
  
