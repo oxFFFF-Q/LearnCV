@@ -114,6 +114,7 @@ def H_from_points(fp,tp):
 def Haffine_from_points(fp,tp):
     """ Find H, affine transformation, such that 
         tp is affine transf of fp. """
+    ''' 计算H，仿射变换，使得tp是经过经过仿射变换H得到的'''
     
     if fp.shape != tp.shape:
         raise RuntimeError('number of points do not match')
