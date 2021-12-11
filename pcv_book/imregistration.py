@@ -9,6 +9,7 @@ import os
 
 def read_points_from_xml(xmlFileName):
     """ Reads control points for face alignment. """
+    ''' 读取用于人脸对齐的控制点'''
 
     xmldoc = minidom.parse(xmlFileName)
     facelist = xmldoc.getElementsByTagName('face')    
@@ -51,6 +52,7 @@ def write_points_to_xml(faces, xmlFileName):
 def compute_rigid_transform(refpoints,points):
     """ Computes rotation, scale and translation for
         aligning points to refpoints. """
+    ''' 计算用于将点对齐到参考点的旋转、尺度和平移量'''
     
     A = array([    [points[0], -points[1], 1, 0],
                 [points[1],  points[0], 0, 1],
