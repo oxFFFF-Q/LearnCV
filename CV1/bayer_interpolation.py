@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.ndimage import convolve
+from basic_operations import display_image
 
 
 def loaddata(path):
@@ -103,3 +104,13 @@ def interpolate(r, g, b):
     b = convolve(b, rbfilter, mode="mirror")
     img = assembleimage(r, g, b)
     return img
+
+if __name__ == "__main__":
+    data = loaddata("data/bayerdata.npy")
+    r, g, b = separatechannels(data)
+
+    img = assembleimage(r, g, b)
+    display_image(img)
+
+    img_interpolated = interpolate(r, g, b)
+    display_image(img_interpolated)

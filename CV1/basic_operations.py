@@ -50,7 +50,7 @@ def load_npy(path):
     #
     # You code here
     #
-    return np.load(path)
+    return np.load(path)     # np.load('x.npz')['n']  读取x.npz文件的z列
 
 def mirror_horizontal(img):
     """ Create and return a horizontally mirrored image:
